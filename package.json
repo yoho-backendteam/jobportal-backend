@@ -1,0 +1,22 @@
+{
+	"name": "jobportal-backend",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "nodemon index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "module",
+	"dependencies": {
+		"dotenv": "^17.2.3",
+		"express": "^5.1.0",
+		"joi": "^18.0.2",
+		"mongoose": "^9.0.0",
+		"nodemon": "^3.1.11",
+		"uuid": "^13.0.0"
+	}
+}
