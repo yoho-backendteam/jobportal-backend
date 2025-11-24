@@ -4,6 +4,7 @@ import { connectDB } from './config/db.js'
 import jobRoutes from './routes/jobRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import otpRoutes from './routes/otpRoutes.js'
+import applicationRoutes from './routes/applicationRoutes.js'
 
 dotenv.config()
 
@@ -16,6 +17,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use("/api/jobs", jobRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/applications", applicationRoutes);
 
 
 app.listen(PORT, () => {
