@@ -17,7 +17,8 @@ import {
     uploadDocuments,
     updateDocument,
     verifyDocument,
-    onboardCandidate
+    onboardCandidate,
+    getApplicationTimeline
 } from "../controllers/applicationController.js";
 import { authMiddleware, authorizeRoles } from "../middleware/authMiddleware.js";
 
@@ -37,6 +38,7 @@ router.put("/:id/offer-status", updateOfferStatus);
 router.put("/:id/upload-documents", uploadDocuments);
 router.put("/:id/update-document", updateDocument);
 router.get("/:id/reschedule-history", getInterviewRescheduleHistory);
+router.get("/:id/timeline", getApplicationTimeline);
 
 // HR only routes
 router.get("/", authorizeRoles("hr"), getAllApplications);

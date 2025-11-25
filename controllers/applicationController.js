@@ -1093,3 +1093,263 @@ export const getInterviewRescheduleHistory = async (req, res) => {
         });
     }
 };
+
+// Get Application Timeline Status
+export const getApplicationTimeline = async (req, res) => {
+    try {
+        const application = await Application.findById(req.params.id)
+            .populate([
+                { 
+                    path: 'job', 
+                    select: 'title department location employmentType workingMode' 
+                },
+                { 
+                    path: 'user', 
+                    select: 'fullName email phoneNumber' 
+                },
+                { 
+                    path: 'interviewDetails.scheduledBy', 
+                    select: 'fullName email' 
+                },
+                { 
+                    path: 'interviewDetails.rescheduleHistory.rescheduledBy', 
+                    select: 'fullName email' 
+                }
+            ]);
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: "Application not found"
+            });
+        }
+
+        // Check if user has permission to view this application
+        if (req.user.role === "candidate" && application.user._id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied. You can only view your own applications."
+            });
+        }
+
+        // Define all possible statuses in order
+        const allStatuses = [
+            "applied",
+            "reviewed", 
+            "shortlisted",
+            "interview scheduled",
+            "interview rescheduled",
+            "interview selected",
+            "interview rejected",
+            "offer sent",
+            "offer accepted",
+            "offer rejected",
+            "rejected",
+            "doc verification pending",
+            "doc verified",
+            "onboarded"
+        ];
+
+        // Get the current status index
+        const currentStatusIndex = allStatuses.indexOf(application.status);
+        
+        // Create timeline with status, completion status, and relevant data
+        const timeline = allStatuses.map((status, index) => {
+            const timelineItem = {
+                status,
+                title: getStatusTitle(status),
+                description: getStatusDescription(status),
+                completed: index < currentStatusIndex,
+                inProgress: index === currentStatusIndex,
+                pending: index > currentStatusIndex,
+                date: getStatusDate(application, status),
+                data: getStatusData(application, status)
+            };
+            return timelineItem;
+        });
+
+        // Filter out irrelevant statuses based on current status
+        let filteredTimeline = timeline;
+        
+        // If application is rejected, show only up to rejected status
+        if (application.status === "rejected" || application.status === "interview rejected" || application.status === "offer rejected") {
+            filteredTimeline = timeline.filter(item => 
+                ["applied", "reviewed", "shortlisted", "interview scheduled", "interview rescheduled", "interview selected", "interview rejected", "offer sent", "offer rejected", "rejected"].includes(item.status)
+            );
+        }
+        // If offer is rejected, show offer related statuses
+        else if (application.status === "offer rejected") {
+            filteredTimeline = timeline.filter(item => 
+                ["applied", "reviewed", "shortlisted", "interview scheduled", "interview rescheduled", "interview selected", "offer sent", "offer rejected"].includes(item.status)
+            );
+        }
+        // If interview is rejected, show interview related statuses
+        else if (application.status === "interview rejected") {
+            filteredTimeline = timeline.filter(item => 
+                ["applied", "reviewed", "shortlisted", "interview scheduled", "interview rescheduled", "interview rejected"].includes(item.status)
+            );
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Application timeline retrieved successfully",
+            data: {
+                applicationId: application._id,
+                jobTitle: application.job?.title,
+                currentStatus: application.status,
+                currentStatusTitle: getStatusTitle(application.status),
+                timeline: filteredTimeline,
+                summary: {
+                    appliedDate: application.createdAt,
+                    lastUpdated: application.updatedAt,
+                    isActive: application.isActive,
+                    rejectionReason: application.rejectionReason
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Get application timeline error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// Helper function to get status title
+const getStatusTitle = (status) => {
+    const statusTitles = {
+        "applied": "Application Submitted",
+        "reviewed": "Application Reviewed", 
+        "shortlisted": "Shortlisted",
+        "interview scheduled": "Interview Scheduled",
+        "interview rescheduled": "Interview Rescheduled",
+        "interview selected": "Interview Passed",
+        "interview rejected": "Interview Failed",
+        "offer sent": "Offer Sent",
+        "offer accepted": "Offer Accepted",
+        "offer rejected": "Offer Rejected",
+        "rejected": "Application Rejected",
+        "doc verification pending": "Document Verification Pending",
+        "doc verified": "Documents Verified",
+        "onboarded": "Onboarded"
+    };
+    return statusTitles[status] || status;
+};
+
+// Helper function to get status description
+const getStatusDescription = (status) => {
+    const statusDescriptions = {
+        "applied": "Your application has been successfully submitted",
+        "reviewed": "HR has reviewed your application",
+        "shortlisted": "Your profile has been shortlisted for the next round",
+        "interview scheduled": "Interview has been scheduled",
+        "interview rescheduled": "Interview has been rescheduled",
+        "interview selected": "You have successfully cleared the interview",
+        "interview rejected": "You did not clear the interview round",
+        "offer sent": "Offer letter has been sent to you",
+        "offer accepted": "You have accepted the offer",
+        "offer rejected": "You have rejected the offer",
+        "rejected": "Your application has been rejected",
+        "doc verification pending": "Please upload required documents for verification",
+        "doc verified": "All your documents have been verified successfully",
+        "onboarded": "Welcome aboard! You have been successfully onboarded"
+    };
+    return statusDescriptions[status] || "";
+};
+
+// Helper function to get status date
+const getStatusDate = (application, status) => {
+    switch (status) {
+        case "applied":
+            return application.createdAt;
+        
+        case "interview scheduled":
+        case "interview rescheduled":
+            return application.interviewDetails?.scheduledAt;
+        
+        case "offer sent":
+            return application.offerDetails?.sentDate;
+        
+        case "doc verified":
+            // Find when all documents were approved
+            const allVerified = application.documents.every(doc => doc.status === "approved");
+            if (allVerified && application.documents.length > 0) {
+                const lastVerifiedDoc = application.documents
+                    .filter(doc => doc.verifiedAt)
+                    .sort((a, b) => new Date(b.verifiedAt) - new Date(a.verifiedAt))[0];
+                return lastVerifiedDoc?.verifiedAt;
+            }
+            return null;
+        
+        case "onboarded":
+            return application.updatedAt;
+        
+        default:
+            return application.updatedAt;
+    }
+};
+
+// Helper function to get status-specific data
+const getStatusData = (application, status) => {
+    switch (status) {
+        case "interview scheduled":
+        case "interview rescheduled":
+            return {
+                interviewDate: application.interviewDetails?.date,
+                interviewTime: application.interviewDetails?.time,
+                mode: application.interviewDetails?.mode,
+                venue: application.interviewDetails?.venue,
+                meetingLink: application.interviewDetails?.meetingLink,
+                instructions: application.interviewDetails?.instructions,
+                scheduledBy: application.interviewDetails?.scheduledBy,
+                rescheduleHistory: application.interviewDetails?.rescheduleHistory?.length || 0
+            };
+        
+        case "interview rescheduled":
+            const lastReschedule = application.interviewDetails?.rescheduleHistory?.slice(-1)[0];
+            return {
+                ...getStatusData(application, "interview scheduled"),
+                previousDate: lastReschedule?.previousDate,
+                previousTime: lastReschedule?.previousTime,
+                reason: lastReschedule?.reason,
+                rescheduledBy: lastReschedule?.rescheduledBy
+            };
+        
+        case "offer sent":
+            return {
+                offerLetter: application.offerDetails?.offerLetter,
+                salary: application.offerDetails?.salary,
+                joiningDate: application.offerDetails?.joiningDate,
+                terms: application.offerDetails?.terms
+            };
+        
+        case "doc verification pending":
+        case "doc verified":
+            const documents = application.documents || [];
+            return {
+                totalDocuments: documents.length,
+                approvedDocuments: documents.filter(doc => doc.status === "approved").length,
+                pendingDocuments: documents.filter(doc => doc.status === "pending").length,
+                rejectedDocuments: documents.filter(doc => doc.status === "rejected").length,
+                documents: documents.map(doc => ({
+                    documentType: doc.documentType,
+                    name: doc.name,
+                    status: doc.status,
+                    rejectionReason: doc.rejectionReason,
+                    uploadedAt: doc.uploadedAt,
+                    verifiedAt: doc.verifiedAt
+                }))
+            };
+        
+        case "rejected":
+        case "interview rejected":
+        case "offer rejected":
+            return {
+                rejectionReason: application.rejectionReason
+            };
+        
+        default:
+            return null;
+    }
+};
