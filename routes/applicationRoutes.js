@@ -8,7 +8,16 @@ import {
     getJobApplications,
     getAllApplications,
     deleteApplication,
-    getApplicationStats
+    getApplicationStats,
+    scheduleInterview,
+    rescheduleInterview,
+    getInterviewRescheduleHistory,
+    sendOffer,
+    updateOfferStatus,
+    uploadDocuments,
+    updateDocument,
+    verifyDocument,
+    onboardCandidate
 } from "../controllers/applicationController.js";
 import { authMiddleware, authorizeRoles } from "../middleware/authMiddleware.js";
 
@@ -24,10 +33,19 @@ router.get("/stats", getApplicationStats);
 router.get("/:id", getApplicationById);
 router.put("/:id", updateApplication);
 router.delete("/:id", deleteApplication);
+router.put("/:id/offer-status", updateOfferStatus);
+router.put("/:id/upload-documents", uploadDocuments);
+router.put("/:id/update-document", updateDocument);
+router.get("/:id/reschedule-history", getInterviewRescheduleHistory);
 
 // HR only routes
 router.get("/", authorizeRoles("hr"), getAllApplications);
 router.get("/job/:jobId", authorizeRoles("hr"), getJobApplications);
 router.put("/:id/status", authorizeRoles("hr"), updateApplicationStatus);
+router.put("/:id/schedule-interview", authorizeRoles("hr"), scheduleInterview);
+router.put("/:id/reschedule-interview", authorizeRoles("hr"), rescheduleInterview);
+router.put("/:id/send-offer", authorizeRoles("hr"), sendOffer);
+router.put("/:id/verify-document", authorizeRoles("hr"), verifyDocument);
+router.put("/:id/onboard", authorizeRoles("hr"), onboardCandidate);
 
 export default router;
