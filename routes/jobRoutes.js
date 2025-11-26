@@ -3,14 +3,13 @@ import {
     createJob,
     getJobs,
     getJobById,
-    applyJob
 } from "../controllers/jobController.js";
+import { authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", createJob);
+router.post("/", authorizeRoles("hr"), createJob);
 router.get("/", getJobs);
 router.get("/:id", getJobById);
-router.put("/apply/:id", applyJob);
 
 export default router;

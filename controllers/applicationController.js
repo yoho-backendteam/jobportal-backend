@@ -100,7 +100,7 @@ export const getMyApplications = async (req, res) => {
             });
         }
 
-        const { status, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = req.query;
+        const { status = 'applied', page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = req.query;
         const userId = req.user._id;
 
         const filter = { user: userId };
@@ -1099,21 +1099,21 @@ export const getApplicationTimeline = async (req, res) => {
     try {
         const application = await Application.findById(req.params.id)
             .populate([
-                { 
-                    path: 'job', 
-                    select: 'title department location employmentType workingMode' 
+                {
+                    path: 'job',
+                    select: 'title department location employmentType workingMode'
                 },
-                { 
-                    path: 'user', 
-                    select: 'fullName email phoneNumber' 
+                {
+                    path: 'user',
+                    select: 'fullName email phoneNumber'
                 },
-                { 
-                    path: 'interviewDetails.scheduledBy', 
-                    select: 'fullName email' 
+                {
+                    path: 'interviewDetails.scheduledBy',
+                    select: 'fullName email'
                 },
-                { 
-                    path: 'interviewDetails.rescheduleHistory.rescheduledBy', 
-                    select: 'fullName email' 
+                {
+                    path: 'interviewDetails.rescheduleHistory.rescheduledBy',
+                    select: 'fullName email'
                 }
             ]);
 
@@ -1135,7 +1135,7 @@ export const getApplicationTimeline = async (req, res) => {
         // Define all possible statuses in order
         const allStatuses = [
             "applied",
-            "reviewed", 
+            "reviewed",
             "shortlisted",
             "interview scheduled",
             "interview rescheduled",
@@ -1152,7 +1152,7 @@ export const getApplicationTimeline = async (req, res) => {
 
         // Get the current status index
         const currentStatusIndex = allStatuses.indexOf(application.status);
-        
+
         // Create timeline with status, completion status, and relevant data
         const timeline = allStatuses.map((status, index) => {
             const timelineItem = {
@@ -1170,22 +1170,22 @@ export const getApplicationTimeline = async (req, res) => {
 
         // Filter out irrelevant statuses based on current status
         let filteredTimeline = timeline;
-        
+
         // If application is rejected, show only up to rejected status
         if (application.status === "rejected" || application.status === "interview rejected" || application.status === "offer rejected") {
-            filteredTimeline = timeline.filter(item => 
+            filteredTimeline = timeline.filter(item =>
                 ["applied", "reviewed", "shortlisted", "interview scheduled", "interview rescheduled", "interview selected", "interview rejected", "offer sent", "offer rejected", "rejected"].includes(item.status)
             );
         }
         // If offer is rejected, show offer related statuses
         else if (application.status === "offer rejected") {
-            filteredTimeline = timeline.filter(item => 
+            filteredTimeline = timeline.filter(item =>
                 ["applied", "reviewed", "shortlisted", "interview scheduled", "interview rescheduled", "interview selected", "offer sent", "offer rejected"].includes(item.status)
             );
         }
         // If interview is rejected, show interview related statuses
         else if (application.status === "interview rejected") {
-            filteredTimeline = timeline.filter(item => 
+            filteredTimeline = timeline.filter(item =>
                 ["applied", "reviewed", "shortlisted", "interview scheduled", "interview rescheduled", "interview rejected"].includes(item.status)
             );
         }
@@ -1220,7 +1220,7 @@ export const getApplicationTimeline = async (req, res) => {
 const getStatusTitle = (status) => {
     const statusTitles = {
         "applied": "Application Submitted",
-        "reviewed": "Application Reviewed", 
+        "reviewed": "Application Reviewed",
         "shortlisted": "Shortlisted",
         "interview scheduled": "Interview Scheduled",
         "interview rescheduled": "Interview Rescheduled",
@@ -1263,14 +1263,14 @@ const getStatusDate = (application, status) => {
     switch (status) {
         case "applied":
             return application.createdAt;
-        
+
         case "interview scheduled":
         case "interview rescheduled":
             return application.interviewDetails?.scheduledAt;
-        
+
         case "offer sent":
             return application.offerDetails?.sentDate;
-        
+
         case "doc verified":
             // Find when all documents were approved
             const allVerified = application.documents.every(doc => doc.status === "approved");
@@ -1281,10 +1281,10 @@ const getStatusDate = (application, status) => {
                 return lastVerifiedDoc?.verifiedAt;
             }
             return null;
-        
+
         case "onboarded":
             return application.updatedAt;
-        
+
         default:
             return application.updatedAt;
     }
@@ -1305,7 +1305,7 @@ const getStatusData = (application, status) => {
                 scheduledBy: application.interviewDetails?.scheduledBy,
                 rescheduleHistory: application.interviewDetails?.rescheduleHistory?.length || 0
             };
-        
+
         case "interview rescheduled":
             const lastReschedule = application.interviewDetails?.rescheduleHistory?.slice(-1)[0];
             return {
@@ -1315,7 +1315,7 @@ const getStatusData = (application, status) => {
                 reason: lastReschedule?.reason,
                 rescheduledBy: lastReschedule?.rescheduledBy
             };
-        
+
         case "offer sent":
             return {
                 offerLetter: application.offerDetails?.offerLetter,
@@ -1323,7 +1323,7 @@ const getStatusData = (application, status) => {
                 joiningDate: application.offerDetails?.joiningDate,
                 terms: application.offerDetails?.terms
             };
-        
+
         case "doc verification pending":
         case "doc verified":
             const documents = application.documents || [];
@@ -1341,14 +1341,14 @@ const getStatusData = (application, status) => {
                     verifiedAt: doc.verifiedAt
                 }))
             };
-        
+
         case "rejected":
         case "interview rejected":
         case "offer rejected":
             return {
                 rejectionReason: application.rejectionReason
             };
-        
+
         default:
             return null;
     }

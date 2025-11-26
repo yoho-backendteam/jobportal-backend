@@ -36,17 +36,3 @@ export const getJobById = async (req, res) => {
     }
 };
 
-// Apply to a job → increments applicantsCount
-export const applyJob = async (req, res) => {
-    try {
-        const job = await Job.findById(req.params.id);
-        if (!job) return res.status(404).json({ succes: false, message: "Job not found" });
-
-        job.applicantsCount += 1;
-        await job.save();
-
-        res.status(200).json({ success: true, message: "Job applied successfully", applicantsCount: job.applicantsCount });
-    } catch (err) {
-        res.status(500).json({ succes: false, message: err.message });
-    }
-};
