@@ -36,8 +36,6 @@ export const createApplication = async (req, res) => {
             });
         }
 
-        console.log(job, 'job')
-
         // Check if job is active
         if (!job.isActive) {
             return res.status(400).json({

@@ -42,14 +42,14 @@ const applicationSchema = new mongoose.Schema(
             venue: String,
             meetingLink: String,
             instructions: String,
-            scheduledBy: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User"
-            },
-            scheduledAt: {
-                type: Date,
-                default: Date.now
-            },
+            // scheduledBy: {
+            //     type: mongoose.Schema.Types.ObjectId,
+            //     ref: "User"
+            // },
+            // scheduledAt: {
+            //     type: Date,
+            //     default: null
+            // },
             rescheduleHistory: [{
                 previousDate: Date,
                 previousTime: String,

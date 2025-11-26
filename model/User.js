@@ -84,6 +84,10 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
+        designation: {
+            type: String,
+            default: ''
+        },
         keySkills: [{
             type: String
         }],

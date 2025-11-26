@@ -27,7 +27,7 @@ const router = express.Router();
 // All routes require authentication
 router.use(authMiddleware);
 
-// Candidate routes
+//Candidate routes
 router.post("/", createApplication);
 router.get("/my-applications", getMyApplications);
 router.get("/stats", getApplicationStats);
@@ -40,7 +40,7 @@ router.put("/:id/update-document", updateDocument);
 router.get("/:id/reschedule-history", getInterviewRescheduleHistory);
 router.get("/:id/timeline", getApplicationTimeline);
 
-// HR only routes
+//HR only routes
 router.get("/", authorizeRoles("hr"), getAllApplications);
 router.get("/job/:jobId", authorizeRoles("hr"), getJobApplications);
 router.put("/:id/status", authorizeRoles("hr"), updateApplicationStatus);
