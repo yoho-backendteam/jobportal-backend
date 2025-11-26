@@ -24,6 +24,10 @@ const jobSchema = new mongoose.Schema(
             type: String,
             default: () => uuidv4(),
             unique: true
+        },
+        isActive: {
+            type: Boolean,
+            default: true
         }
 
     },

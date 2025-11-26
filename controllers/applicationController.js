@@ -24,7 +24,7 @@ export const createApplication = async (req, res) => {
             });
         }
 
-        const { job: jobId, additionalDocuments } = req.body;
+        const { job: jobId, additionalDocuments = [] } = req.body;
         const userId = req.user._id;
 
         // Check if job exists
@@ -35,6 +35,8 @@ export const createApplication = async (req, res) => {
                 message: "Job not found"
             });
         }
+
+        console.log(job, 'job')
 
         // Check if job is active
         if (!job.isActive) {

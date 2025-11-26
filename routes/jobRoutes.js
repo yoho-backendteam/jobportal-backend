@@ -4,11 +4,11 @@ import {
     getJobs,
     getJobById,
 } from "../controllers/jobController.js";
-import { authorizeRoles } from "../middleware/authMiddleware.js";
+import { authMiddleware, authorizeRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", authorizeRoles("hr"), createJob);
+router.post("/", authMiddleware, authorizeRoles("hr"), createJob);
 router.get("/", getJobs);
 router.get("/:id", getJobById);
 
