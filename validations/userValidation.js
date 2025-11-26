@@ -61,6 +61,7 @@ export const registerValidation = Joi.object({
         "number.min": "Total experience cannot be negative",
         "number.max": "Total experience seems too high"
     }),
+    designation: Joi.string().allow("").optional(),
     keySkills: Joi.array().items(Joi.string()).default([]),
     resume: Joi.string().allow("").optional()
 });

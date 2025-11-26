@@ -845,7 +845,7 @@ export const getAllApplications = async (req, res) => {
             })
             .populate({
                 path: 'user',
-                select: 'fullName email phoneNumber highestEducation totalExperience'
+                select: 'fullName email phoneNumber highestEducation totalExperience designation resume'
             })
             .sort(sort)
             .limit(limit * 1)
@@ -1351,5 +1351,101 @@ const getStatusData = (application, status) => {
 
         default:
             return null;
+    }
+};
+
+// Get Interview Scheduled Applications (HR only)
+export const getInterviewScheduledApplications = async (req, res) => {
+    try {
+        const { error } = applicationQueryValidation.validate(req.query);
+        if (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.details[0].message
+            });
+        }
+
+        const {
+            page = 1,
+            limit = 10,
+            sortBy = "interviewDetails.date",
+            sortOrder = "asc",
+            mode
+        } = req.query;
+
+        // Filter for interview scheduled applications
+        const filter = {
+            status: {
+                $in: ["interview scheduled", "interview rescheduled"]
+            }
+        };
+
+        // Add interview mode filter if provided
+        if (mode) {
+            filter["interviewDetails.mode"] = mode;
+        }
+
+        const sort = {};
+        sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+        const applications = await Application.find(filter)
+            .populate({
+                path: 'job',
+                select: 'title department location employmentType workingMode'
+            })
+            .populate({
+                path: 'user',
+                select: 'fullName email phoneNumber highestEducation totalExperience keySkills resume'
+            })
+            .populate({
+                path: 'interviewDetails.scheduledBy',
+                select: 'fullName email'
+            })
+            .sort(sort)
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const total = await Application.countDocuments(filter);
+
+        // Get statistics for interview scheduled applications
+        const stats = await Application.aggregate([
+            { $match: { status: { $in: ["interview scheduled", "interview rescheduled"] } } },
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const statistics = {
+            total: total,
+            "interview scheduled": 0,
+            "interview rescheduled": 0
+        };
+
+        stats.forEach(stat => {
+            statistics[stat._id] = stat.count;
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Interview scheduled applications retrieved successfully",
+            data: applications,
+            statistics: statistics,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(total / limit),
+                totalApplications: total,
+                hasNext: page * limit < total,
+                hasPrev: page > 1
+            }
+        });
+    } catch (error) {
+        console.error("Get interview scheduled applications error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };

@@ -18,7 +18,8 @@ import {
     updateDocument,
     verifyDocument,
     onboardCandidate,
-    getApplicationTimeline
+    getApplicationTimeline,
+    getInterviewScheduledApplications
 } from "../controllers/applicationController.js";
 import { authMiddleware, authorizeRoles } from "../middleware/authMiddleware.js";
 
@@ -46,6 +47,7 @@ router.get("/job/:jobId", authorizeRoles("hr"), getJobApplications);
 router.put("/:id/status", authorizeRoles("hr"), updateApplicationStatus);
 router.put("/:id/schedule-interview", authorizeRoles("hr"), scheduleInterview);
 router.put("/:id/reschedule-interview", authorizeRoles("hr"), rescheduleInterview);
+router.get("/interviews/scheduled", authorizeRoles("hr"), getInterviewScheduledApplications);
 router.put("/:id/send-offer", authorizeRoles("hr"), sendOffer);
 router.put("/:id/verify-document", authorizeRoles("hr"), verifyDocument);
 router.put("/:id/onboard", authorizeRoles("hr"), onboardCandidate);
