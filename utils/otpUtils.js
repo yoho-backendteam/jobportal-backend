@@ -18,9 +18,9 @@ export const createOTPRecord = async (email, phoneNumber, type = "verification")
         });
 
         const otp = generateOTP();
-        const expiresAt = new Date(Date.now() + 1.5 * 60 * 1000); // 1.5 minutes
+        const expiresAt = new Date(Date.now() + 3 * 60 * 1000);// 1.5 minutes
 
-        const otpRecord = await Otp.create({
+        await Otp.create({
             email,
             phoneNumber,
             otp,

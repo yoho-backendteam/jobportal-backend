@@ -36,3 +36,67 @@ export const getJobById = async (req, res) => {
     }
 };
 
+// Update Job
+export const updateJob = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const updatedJob = await Job.findByIdAndUpdate(id, req.body, { new: true });
+
+        if (!updatedJob) {
+            return res.status(404).json({ success: false, message: "Job not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Job updated successfully", data: updatedJob });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// Delete Job
+export const deleteJob = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedJob = await Job.findByIdAndDelete(id);
+
+        if (!deletedJob) {
+            return res.status(404).json({ success: false, message: "Job not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Job deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// Update Job Status (Activate / Deactivate)
+export const updateJobStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        if (typeof isActive !== "boolean") {
+            return res.status(400).json({ success: false, message: "isActive must be true or false" });
+        }
+
+        const job = await Job.findByIdAndUpdate(
+            id,
+            { isActive },
+            { new: true }
+        );
+
+        if (!job) {
+            return res.status(404).json({ success: false, message: "Job not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: `Job ${isActive ? "activated" : "deactivated"} successfully`,
+            data: job
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+

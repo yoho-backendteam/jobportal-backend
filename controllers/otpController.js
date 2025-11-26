@@ -6,6 +6,7 @@ import {
 } from "../validations/otpValidation.js";
 import { createOTPRecord, verifyOTP, isValidOTP } from "../utils/otpUtils.js";
 import bcrypt from "bcryptjs";
+import Otp from '../model/Otp.js'
 
 const hashPassword = async (password) => {
     const salt = await bcrypt.genSalt(12);
@@ -189,15 +190,12 @@ export const resetPassword = async (req, res) => {
         await user.save();
 
         // Delete any remaining OTP records for this user
-        await import("../models/Otp.js").then(async (OtpModule) => {
-            const Otp = OtpModule.default;
-            await Otp.deleteMany({
-                $or: [
-                    { email: email || null },
-                    { phoneNumber: phoneNumber || null }
-                ],
-                type: "reset"
-            });
+        await Otp.deleteMany({
+            $or: [
+                { email: email || null },
+                { phoneNumber: phoneNumber || null }
+            ],
+            type: "reset"
         });
 
         res.status(200).json({
@@ -260,7 +258,7 @@ export const sendVerificationOtp = async (req, res) => {
             message: "Verification OTP sent successfully",
             data: {
                 otp: otp,
-                expiresIn: "1.5 minutes"
+                expiresIn: "3 minutes"
             }
         });
     } catch (error) {
