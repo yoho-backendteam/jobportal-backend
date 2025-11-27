@@ -5,6 +5,7 @@ import jobRoutes from './routes/jobRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import otpRoutes from './routes/otpRoutes.js'
 import applicationRoutes from './routes/applicationRoutes.js'
+import dashboardRoutes from './routes/dashboardRoutes.js'
 import cors from 'cors'
 
 dotenv.config()
@@ -20,6 +21,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/dashboard", dashboardRoutes)
 
 
 app.listen(PORT, () => {
