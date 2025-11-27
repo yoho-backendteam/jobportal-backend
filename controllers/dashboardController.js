@@ -207,7 +207,8 @@ const getHiringPipelineStats = async () => {
         applied: 0,
         "interview scheduled": 0,
         "offer sent": 0,
-        onboarded: 0
+        onboarded: 0,
+        total: await Application.countDocuments()
     };
 
     pipelineStats.forEach(stat => {
@@ -239,6 +240,9 @@ const getTopPerformingJobs = async () => {
                 department: 1,
                 location: 1,
                 applicantsCount: 1,
+                salaryRange: 1,
+                employmentType: 1,
+                experienceRequired: 1,
                 totalApplications: { $size: '$applications' },
                 interviewSelectedCount: {
                     $size: {
