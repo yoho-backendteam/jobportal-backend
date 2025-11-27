@@ -250,9 +250,6 @@ export const sendVerificationOtp = async (req, res) => {
         // Generate verification OTP
         const otp = await createOTPRecord(email, phoneNumber, "verification");
 
-        // In a real application, you would send the OTP via email/SMS here
-        console.log(`Verification OTP for ${email || phoneNumber}: ${otp}`);
-
         res.status(200).json({
             success: true,
             message: "Verification OTP sent successfully",

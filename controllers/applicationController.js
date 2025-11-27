@@ -447,7 +447,7 @@ export const updateOfferStatus = async (req, res) => {
             });
         }
 
-        const { status } = req.body;
+        const { status, rejectionReason = '' } = req.body;
         const application = await Application.findById(req.params.id);
 
         if (!application) {
@@ -473,7 +473,7 @@ export const updateOfferStatus = async (req, res) => {
             });
         }
 
-        let updateData = { status };
+        let updateData = { status, rejectionReason };
 
         if (status === "offer rejected") {
             updateData.isActive = false;
@@ -494,7 +494,7 @@ export const updateOfferStatus = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: `Offer ${status} successfully`,
+            message: `${status} successfully`,
             data: updatedApplication
         });
     } catch (error) {

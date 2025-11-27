@@ -87,7 +87,8 @@ export const offerValidation = Joi.object({
 });
 
 export const offerStatusValidation = Joi.object({
-    status: Joi.string().valid('offer accepted', 'offer rejected').required()
+    status: Joi.string().valid('offer accepted', 'offer rejected').required(),
+    rejectionReason: Joi.string().optional().allow('')
 });
 
 export const documentVerificationValidation = Joi.object({
