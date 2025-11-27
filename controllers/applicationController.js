@@ -100,11 +100,10 @@ export const getMyApplications = async (req, res) => {
             });
         }
 
-        const { status = 'applied', page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = req.query;
+        const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = req.query;
         const userId = req.user._id;
 
         const filter = { user: userId };
-        if (status) filter.status = status;
 
         const sort = {};
         sort[sortBy] = sortOrder === "desc" ? -1 : 1;
@@ -1370,7 +1369,6 @@ export const getInterviewScheduledApplications = async (req, res) => {
             limit = 10,
             sortBy = "interviewDetails.date",
             sortOrder = "asc",
-            mode
         } = req.query;
 
         // Filter for interview scheduled applications
@@ -1379,11 +1377,6 @@ export const getInterviewScheduledApplications = async (req, res) => {
                 $in: ["interview scheduled", "interview rescheduled"]
             }
         };
-
-        // Add interview mode filter if provided
-        if (mode) {
-            filter["interviewDetails.mode"] = mode;
-        }
 
         const sort = {};
         sort[sortBy] = sortOrder === "desc" ? -1 : 1;
@@ -1396,10 +1389,6 @@ export const getInterviewScheduledApplications = async (req, res) => {
             .populate({
                 path: 'user',
                 select: 'fullName email phoneNumber highestEducation totalExperience keySkills resume'
-            })
-            .populate({
-                path: 'interviewDetails.scheduledBy',
-                select: 'fullName email'
             })
             .sort(sort)
             .limit(limit * 1)

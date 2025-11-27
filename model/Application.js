@@ -42,14 +42,6 @@
                 venue: String,
                 meetingLink: String,
                 instructions: String,
-                // scheduledBy: {
-                //     type: mongoose.Schema.Types.ObjectId,
-                //     ref: "User"
-                // },
-                // scheduledAt: {
-                //     type: Date,
-                //     default: null
-                // },
                 rescheduleHistory: [{
                     previousDate: Date,
                     previousTime: String,
