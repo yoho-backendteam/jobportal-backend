@@ -407,6 +407,8 @@ export const sendOffer = async (req, res) => {
             status: "offer sent",
             offerDetails: {
                 ...req.body,
+                offerLetter: 'offer_letter_123.pdf',
+                terms: "This offer is subject to background verification and document validation. Probation period: 3 months.",
                 sentDate: new Date()
             }
         };
@@ -1106,14 +1108,6 @@ export const getApplicationTimeline = async (req, res) => {
                     path: 'user',
                     select: 'fullName email phoneNumber'
                 },
-                {
-                    path: 'interviewDetails.scheduledBy',
-                    select: 'fullName email'
-                },
-                {
-                    path: 'interviewDetails.rescheduleHistory.rescheduledBy',
-                    select: 'fullName email'
-                }
             ]);
 
         if (!application) {

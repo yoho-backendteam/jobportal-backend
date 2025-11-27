@@ -80,10 +80,8 @@ export const interviewValidation = Joi.object({
 });
 
 export const offerValidation = Joi.object({
-    offerLetter: Joi.string().required(),
     salary: Joi.number().required().min(0),
     joiningDate: Joi.date().required().min('now'),
-    terms: Joi.string().optional().allow('')
 });
 
 export const offerStatusValidation = Joi.object({
